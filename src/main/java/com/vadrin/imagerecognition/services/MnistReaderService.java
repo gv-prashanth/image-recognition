@@ -9,11 +9,14 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MnistReader {
-	public static final int LABEL_FILE_MAGIC_NUMBER = 2049;
-	public static final int IMAGE_FILE_MAGIC_NUMBER = 2051;
+import org.springframework.stereotype.Service;
 
-	public static int[] getLabels(String infile) {
+@Service
+public class MnistReaderService {
+	private static final int LABEL_FILE_MAGIC_NUMBER = 2049;
+	private static final int IMAGE_FILE_MAGIC_NUMBER = 2051;
+
+	public int[] getLabels(String infile) {
 
 		ByteBuffer bb = loadFileToByteBuffer(infile);
 
@@ -28,7 +31,7 @@ public class MnistReader {
 		return labels;
 	}
 
-	public static List<int[][]> getImages(String infile) {
+	public List<int[][]> getImages(String infile) {
 		ByteBuffer bb = loadFileToByteBuffer(infile);
 
 		assertMagicNumber(IMAGE_FILE_MAGIC_NUMBER, bb.getInt());
@@ -44,21 +47,21 @@ public class MnistReader {
 		return images;
 	}
 
-	private static int[][] readImage(int numRows, int numCols, ByteBuffer bb) {
+	private int[][] readImage(int numRows, int numCols, ByteBuffer bb) {
 		int[][] image = new int[numRows][];
 		for (int row = 0; row < numRows; row++)
 			image[row] = readRow(numCols, bb);
 		return image;
 	}
 
-	private static int[] readRow(int numCols, ByteBuffer bb) {
+	private int[] readRow(int numCols, ByteBuffer bb) {
 		int[] row = new int[numCols];
 		for (int col = 0; col < numCols; ++col)
 			row[col] = bb.get() & 0xFF; // To unsigned
 		return row;
 	}
 
-	public static void assertMagicNumber(int expectedMagicNumber, int magicNumber) {
+	private void assertMagicNumber(int expectedMagicNumber, int magicNumber) {
 		if (expectedMagicNumber != magicNumber) {
 			switch (expectedMagicNumber) {
 			case LABEL_FILE_MAGIC_NUMBER:
@@ -77,11 +80,11 @@ public class MnistReader {
 	 * them. ;-)
 	 ******/
 
-	public static ByteBuffer loadFileToByteBuffer(String infile) {
+	private ByteBuffer loadFileToByteBuffer(String infile) {
 		return ByteBuffer.wrap(loadFile(infile));
 	}
 
-	public static byte[] loadFile(String infile) {
+	private byte[] loadFile(String infile) {
 		try {
 			RandomAccessFile f = new RandomAccessFile(infile, "r");
 			FileChannel chan = f.getChannel();
@@ -100,7 +103,7 @@ public class MnistReader {
 		}
 	}
 
-	public static String renderImage(int[][] image) {
+	private String renderImage(int[][] image) {
 		StringBuffer sb = new StringBuffer();
 
 		for (int row = 0; row < image.length; row++) {
@@ -122,7 +125,7 @@ public class MnistReader {
 		return sb.toString();
 	}
 
-	public static String repeat(String s, int n) {
+	private String repeat(String s, int n) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < n; i++)
 			sb.append(s);
