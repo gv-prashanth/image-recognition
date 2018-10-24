@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -29,13 +30,14 @@ public class ImageRecognitionService {
 
 	private static final Logger log = LoggerFactory.getLogger(ImageRecognitionService.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-	private static final String TRAINING_IMAGES_FILE = "D:\\Projects\\stsworkspace\\image-recognition\\src\\main\\resources\\static\\train-images.idx3-ubyte";
-	private static final String TRAINING_LABLES_FILE = "D:\\Projects\\stsworkspace\\image-recognition\\src\\main\\resources\\static\\train-labels.idx1-ubyte";
-	private static final String TEST_IMAGES_FILE = "D:\\Projects\\stsworkspace\\image-recognition\\src\\main\\resources\\static\\t10k-images.idx3-ubyte";
-	private static final String TEST_LABLES_FILE = "D:\\Projects\\stsworkspace\\image-recognition\\src\\main\\resources\\static\\t10k-labels.idx1-ubyte";
+	private static final String TRAINING_IMAGES_FILE_NAME = "train-images.idx3-ubyte";
+	private static final String TRAINING_LABLES_FILE_NAME = "train-labels.idx1-ubyte";
+	private static final String TEST_IMAGES_FILE_NAME = "t10k-images.idx3-ubyte";
+	private static final String TEST_LABLES_FILE_NAME = "t10k-labels.idx1-ubyte";
+	private static final String NETWORK_FILE_NAME = "network.json";
 
 	private NeuralNetwork neuralNetwork;
-	File networkFile = new File("D:\\Projects\\stsworkspace\\image-recognition\\src\\main\\resources\\network.json");
+	File networkFile;
 
 	@Autowired
 	MnistReaderService mnistReaderService;
@@ -44,6 +46,7 @@ public class ImageRecognitionService {
 	private void initiate() throws InvalidInputException, JsonGenerationException, JsonMappingException, IOException,
 			NetworkNotInitializedException {
 		log.info("Starting the initiation of ImageRecognitionService at {}", dateFormat.format(new Date()));
+		networkFile = new ClassPathResource(NETWORK_FILE_NAME).getFile();
 		if (networkFile.exists() && networkFile.isFile()) {
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode networkJson = mapper.readValue(networkFile, JsonNode.class);
@@ -72,7 +75,7 @@ public class ImageRecognitionService {
 
 	public double train() throws InvalidInputException, NetworkNotInitializedException, JsonGenerationException,
 			JsonMappingException, IOException {
-		DataSet trainingSet = createSet(TRAINING_IMAGES_FILE, TRAINING_LABLES_FILE);
+		DataSet trainingSet = createSet(new ClassPathResource(TRAINING_IMAGES_FILE_NAME).getFile(), new ClassPathResource(TRAINING_LABLES_FILE_NAME).getFile());
 		DataSet randomTrainingBatch = trainingSet.getRandomSet(0.1);
 		neuralNetwork.train(randomTrainingBatch);
 		double avgrms = neuralNetwork.processAndCompareWithTrainingSetOutput(randomTrainingBatch);
@@ -84,8 +87,12 @@ public class ImageRecognitionService {
 		return (avgrms * 100);
 	}
 
-	public double measure() throws InvalidInputException, NetworkNotInitializedException {
-		DataSet testSet = createSet(TEST_IMAGES_FILE, TEST_LABLES_FILE);
+	private DataSet createSet(File file, File file2) {
+		return createSet(file.getPath(),file2.getPath());
+	}
+
+	public double measure() throws InvalidInputException, NetworkNotInitializedException, IOException {
+		DataSet testSet = createSet(new ClassPathResource(TEST_IMAGES_FILE_NAME).getFile(), new ClassPathResource(TEST_LABLES_FILE_NAME).getFile());
 		int correct = 0;
 		Iterator<TrainingExample> iterator = testSet.iterator();
 		int i = 0;
