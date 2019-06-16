@@ -104,7 +104,7 @@ function prepareSimpleCanvas()
 		xmlhttp.open("PUT", "/network");
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				alert(this.responseText);
+				alert("Training complete. Click measure to see how good the network is.");
 			}
 		};
 		xmlhttp.send();
@@ -116,7 +116,7 @@ function prepareSimpleCanvas()
 		xmlhttp.open("GET", "/network/measure");
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
-				alert(this.responseText);
+				alert(this.responseText+"% correct rate.");
 			}
 		};
 		xmlhttp.send();

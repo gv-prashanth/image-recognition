@@ -1,24 +1,21 @@
 package com.vadrin.imagerecognition.services;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vadrin.imagerecognition.services.storage.DataStorageService;
+import com.vadrin.imagerecognition.services.storage.NetworkStorageService;
 import com.vadrin.neuralnetwork.commons.exceptions.InvalidInputException;
 import com.vadrin.neuralnetwork.commons.exceptions.NetworkNotInitializedException;
 import com.vadrin.neuralnetwork.models.DataSet;
@@ -30,91 +27,82 @@ public class ImageRecognitionService {
 
 	private static final Logger log = LoggerFactory.getLogger(ImageRecognitionService.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-	private static final String TRAINING_IMAGES_FILE_NAME = "train-images.idx3-ubyte";
-	private static final String TRAINING_LABLES_FILE_NAME = "train-labels.idx1-ubyte";
-	private static final String TEST_IMAGES_FILE_NAME = "t10k-images.idx3-ubyte";
-	private static final String TEST_LABLES_FILE_NAME = "t10k-labels.idx1-ubyte";
-	private static final String NETWORK_FILE_NAME = "network.json";
+	private static final int LOOPS = 10000;
+	private static final int EPOCHS = 1;
+	private static final double SIZEFACTOR = 1d;
+	private static final double LEARNINGRATE = 0.02d;
 
 	private NeuralNetwork neuralNetwork;
-	File networkFile;
 
 	@Autowired
-	MnistReaderService mnistReaderService;
+	DataStorageService dataStorageService;
+	
+	@Autowired
+	NetworkStorageService networkStorageService;
 
 	@PostConstruct
 	private void initiate() throws InvalidInputException, JsonGenerationException, JsonMappingException, IOException,
 			NetworkNotInitializedException {
 		log.info("Starting the initiation of ImageRecognitionService at {}", dateFormat.format(new Date()));
-		networkFile = new ClassPathResource(NETWORK_FILE_NAME).getFile();
-		if (networkFile.exists() && networkFile.isFile()) {
-			ObjectMapper mapper = new ObjectMapper();
-			JsonNode networkJson = mapper.readValue(networkFile, JsonNode.class);
-			neuralNetwork = new NeuralNetwork(networkJson);
-			log.info("Found a network file. Loading the previous network file.");
-		} else {
+		if(!networkStorageService.isNetworkPresentInStorage()) {
+			log.info("Network file NOT found. Loading a new random network.");
+			networkStorageService.createEmptyNetworkStorage();
 			int[] neuronsPerLayer = { 784, 70, 35, 10 };
-			neuralNetwork = new NeuralNetwork(neuronsPerLayer, 0.3d, -0.5d, 0.7d, -1d, 1d);
-			log.info("No network file found. Constructing a new network.");
-			log.info("Training this newly created neural network");
-			train();
-			log.info("Finished training the network. Ready for action!");
+			neuralNetwork = new NeuralNetwork(neuronsPerLayer, LEARNINGRATE, -0.5d, 0.7d, -1d, 1d);
+			networkStorageService.saveNetworkToStorage(neuralNetwork);
 		}
+		log.info("Found a network file. Loading it.");
+		neuralNetwork = networkStorageService.loadNetworkFromStorage();
 		log.info("Finished the initiation of ImageRecognitionService at {}", dateFormat.format(new Date()));
 	}
 
 	public int recognize(double[][] images) throws InvalidInputException, NetworkNotInitializedException {
-		double[] input = new double[28 * 28];
-		for (int j = 0; j < 28; j++) {
-			for (int k = 0; k < 28; k++) {
-				input[k + j * 28] = images[j][k];
+		//Assuming square inputs
+		double[] input = new double[images.length * images.length];
+		for (int j = 0; j < images.length; j++) {
+			for (int k = 0; k < images.length; k++) {
+				input[k + j * images.length] = images[j][k];
 			}
 		}
 		return indexOfHighestValue(neuralNetwork.process(input));
 	}
 
-	public double train() throws InvalidInputException, NetworkNotInitializedException, JsonGenerationException,
+	public void train() throws InvalidInputException, NetworkNotInitializedException, JsonGenerationException,
 			JsonMappingException, IOException {
-		DataSet trainingSet = createSet(new ClassPathResource(TRAINING_IMAGES_FILE_NAME).getFile(), new ClassPathResource(TRAINING_LABLES_FILE_NAME).getFile());
-		DataSet randomTrainingBatch = trainingSet.getRandomSet(0.1);
-		neuralNetwork.train(randomTrainingBatch);
-		double avgrms = neuralNetwork.processAndCompareWithTrainingSetOutput(randomTrainingBatch);
-		neuralNetwork.saveNetworkToFile(networkFile);
-		ObjectMapper mapper = new ObjectMapper();
-		JsonNode networkJson = mapper.readValue(networkFile, JsonNode.class);
-		neuralNetwork = new NeuralNetwork(networkJson);
-		log.info("The network is now trained till an error percentage of {}%.", ((avgrms * 100)));
-		return (avgrms * 100);
-	}
-
-	private DataSet createSet(File file, File file2) {
-		return createSet(file.getPath(),file2.getPath());
+		log.info("Training this neural network from MNIST dataset");
+		DataSet trainingSet = dataStorageService.getTrainingSet();
+		for(int epoch=0; epoch < EPOCHS; epoch++) {
+			DataSet randomTrainingBatch = trainingSet.getRandomSet(SIZEFACTOR);
+			log.info("Picked up a random training batch {} of size {}", epoch, randomTrainingBatch.size());
+			for(int i=0; i < LOOPS; i++) {
+				neuralNetwork.trainALittle(randomTrainingBatch);
+				double accuracy = measure(dataStorageService.getTrainingSet());
+				log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
+				networkStorageService.saveNetworkToStorage(neuralNetwork);
+			}
+			double accuracy = measure(dataStorageService.getTrainingSet());
+			log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
+			networkStorageService.saveNetworkToStorage(neuralNetwork);
+		}
 	}
 
 	public double measure() throws InvalidInputException, NetworkNotInitializedException, IOException {
-		DataSet testSet = createSet(new ClassPathResource(TEST_IMAGES_FILE_NAME).getFile(), new ClassPathResource(TEST_LABLES_FILE_NAME).getFile());
+		DataSet testSet = dataStorageService.getTestSet();
+		return measure(testSet);
+	}
+	
+	public double measure(DataSet inputSet) throws InvalidInputException, NetworkNotInitializedException, IOException {
 		int correct = 0;
-		Iterator<TrainingExample> iterator = testSet.iterator();
-		int i = 0;
+		Iterator<TrainingExample> iterator = inputSet.iterator();
 		while (iterator.hasNext()) {
 			TrainingExample thisExample = iterator.next();
-			double highest = indexOfHighestValue(neuralNetwork.process(thisExample.getInput()));
-			double actualHighest = indexOfHighestValue(thisExample.getOutput());
-			if (highest == actualHighest) {
+			int networkAnswer = indexOfHighestValue(neuralNetwork.process(thisExample.getInput()));
+			int actualAnswer = indexOfHighestValue(thisExample.getOutput());
+			if (networkAnswer == actualAnswer) {
 				correct++;
 			}
-			if (i % 1000 == 0) {
-				double[][] image = new double[28][28];
-				for (int j = 0; j < 28; j++) {
-					for (int k = 0; k < 28; k++) {
-						 image[j][k] = thisExample.getInput()[k + j * 28];
-					}
-				}
-				printBitmap(image);
-			}
-			i++;
 		}
-		return ((double) correct / (double) testSet.size()) * 100;
+		return ((double) correct / (double) inputSet.size()) * 100;
 	}
 
 	private int indexOfHighestValue(double[] values) {
@@ -127,34 +115,5 @@ public class ImageRecognitionService {
 		return index;
 	}
 
-	private DataSet createSet(String imagesLoc, String lablesLoc) {
-		DataSet set = new DataSet();
-		try {
-			int[] labels = mnistReaderService.getLabels(lablesLoc);
-			List<int[][]> images = mnistReaderService.getImages(imagesLoc);
-			for (int i = 0; i < labels.length; i++) {
-				double[] input = new double[28 * 28];
-				double[] output = new double[10];
-				output[labels[i]] = 1d;
-				for (int j = 0; j < 28; j++) {
-					for (int k = 0; k < 28; k++) {
-						input[k + j * 28] = (double) images.get(i)[j][k] / (double) 256;
-					}
-				}
-				set.add(input, output);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return set;
-	}
 
-	public void printBitmap(double[][] pixels) {
-		for( int i = 0; i < pixels.length; i++ ) {
-		    for( int j = 0; j < pixels[i].length; j++ ) {
-		    	System.out.print(pixels[i][j]);
-		    }
-		    System.out.println();
-		}
-	}
 }

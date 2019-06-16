@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.vadrin.imagerecognition.services.ImageProcessingService;
 import com.vadrin.imagerecognition.services.ImageRecognitionService;
+import com.vadrin.imagerecognition.services.format.ImageFormattingService;
 import com.vadrin.neuralnetwork.commons.exceptions.InvalidInputException;
 import com.vadrin.neuralnetwork.commons.exceptions.NetworkNotInitializedException;
 
@@ -22,18 +22,18 @@ public class ImageRecognitionController {
 	ImageRecognitionService imageRecognitionService;
 	
 	@Autowired
-	ImageProcessingService imageProcessingService;
+	ImageFormattingService imageFormattingService;
 	
 	@RequestMapping(method = RequestMethod.POST, value = "/pngImage")
 	public int aggregate(@RequestBody String pngImage) throws IOException, InvalidInputException, NetworkNotInitializedException {
-		double[][] pixels = imageProcessingService.convertPngtoBitmap(pngImage);
-		imageRecognitionService.printBitmap(pixels);
+		double[][] pixels = imageFormattingService.convertPngtoBitmap(pngImage);
+		imageFormattingService.renderImage(pixels);
 		return imageRecognitionService.recognize(pixels);
 	}
 	
 	@RequestMapping(method = RequestMethod.PUT, value = "/network")
-	public double train() throws JsonGenerationException, JsonMappingException, InvalidInputException, NetworkNotInitializedException, IOException {
-		return imageRecognitionService.train();
+	public void train() throws JsonGenerationException, JsonMappingException, InvalidInputException, NetworkNotInitializedException, IOException {
+		imageRecognitionService.train();
 	}
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/network/measure")
