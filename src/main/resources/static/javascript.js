@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var canvasWidth = 280;
-var canvasHeight = 280;
+var canvasWidth = 420;
+var canvasHeight = 420;
 
 /****************************************************************************** Simple Canvas */
 
@@ -83,7 +83,7 @@ function prepareSimpleCanvas()
 		var dataURL = canvas_simple.toDataURL();
 		console.log(dataURL);
 		var xmlhttp = new XMLHttpRequest(); // new HttpRequest instance 
-		xmlhttp.open("POST", "/pngImage");
+		xmlhttp.open("POST", "/image/base64png");
 		xmlhttp.setRequestHeader("Content-Type", "text/plain");
 		xmlhttp.onreadystatechange = function() {
 			if (this.readyState == 4 && this.status == 200) {
@@ -169,7 +169,7 @@ function redrawSimple()
 {
 	clearCanvas_simple();
 	
-	var radius = 20;
+	var radius = 35;
 	context_simple.strokeStyle = "black";
 	context_simple.lineJoin = "round";
 	context_simple.lineWidth = radius;
