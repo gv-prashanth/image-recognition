@@ -33,8 +33,8 @@ public class DataStorageService {
 				double[] input = new double[28 * 28];
 				double[] output = new double[10];
 				output[labels[i]] = 1d;
-				if(i%10==0)
-					outputService.renderImage(images.get(i));
+//				if(i%10==0)
+//					outputService.renderImage(images.get(i));
 				for (int j = 0; j < 28; j++) {
 					for (int k = 0; k < 28; k++) {
 						//input[k + j * 28] = (double) images.get(i)[j][k] / (double) 256;

@@ -38,7 +38,7 @@ public class ImageRecognitionController {
 		BufferedImage jpegResizedImage = imageFormattingService.resizeImage(jpegImage, scale);
 		BufferedImage greyJpegImage = imageFormattingService.getGreyScaleJpegFromRGBJpeg(jpegResizedImage);
 		double[][] pixels = imageFormattingService.getPixelInformation(greyJpegImage);
-		outputService.renderImage(pixels);
+		//outputService.renderImage(pixels);
 		return imageRecognitionService.recognize(pixels);
 	}
 	

@@ -27,9 +27,9 @@ public class ImageRecognitionService {
 
 	private static final Logger log = LoggerFactory.getLogger(ImageRecognitionService.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-	private static final int LOOPS = 10000;
-	private static final int EPOCHS = 1;
-	private static final double SIZEFACTOR = 1d;
+	private static final int LOOPS = 100;
+	private static final int EPOCHS = 50;
+	private static final double SIZEFACTOR = 0.01d;
 	private static final double LEARNINGRATE = 0.02d;
 
 	private NeuralNetwork neuralNetwork;
@@ -76,9 +76,9 @@ public class ImageRecognitionService {
 			log.info("Picked up a random training batch {} of size {}", epoch, randomTrainingBatch.size());
 			for(int i=0; i < LOOPS; i++) {
 				neuralNetwork.trainALittle(randomTrainingBatch);
-				double accuracy = measure(dataStorageService.getTrainingSet());
-				log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
-				networkStorageService.saveNetworkToStorage(neuralNetwork);
+//				double accuracy = measure(dataStorageService.getTrainingSet());
+//				log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
+//				networkStorageService.saveNetworkToStorage(neuralNetwork);
 			}
 			double accuracy = measure(dataStorageService.getTrainingSet());
 			log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
