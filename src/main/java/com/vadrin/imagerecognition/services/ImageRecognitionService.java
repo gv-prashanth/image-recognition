@@ -27,16 +27,19 @@ public class ImageRecognitionService {
 
 	private static final Logger log = LoggerFactory.getLogger(ImageRecognitionService.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-	private static final int LOOPS = 100;
 	private static final int EPOCHS = 50;
 	private static final double SIZEFACTOR = 0.01d;
-	private static final double LEARNINGRATE = 0.02d;
+	private static final double LEARNINGRATE = 0.1d;
+	private static final double INITIALBIASLOWER = -0.5d;
+	private static final double INITIALBIASUPPER = 0.7d;
+	private static final double INITIALWEIGHTSLOWER = -1d;
+	private static final double INITIALWEIGHTSUPPER = 1d;
 
 	private NeuralNetwork neuralNetwork;
 
 	@Autowired
 	DataStorageService dataStorageService;
-	
+
 	@Autowired
 	NetworkStorageService networkStorageService;
 
@@ -44,11 +47,12 @@ public class ImageRecognitionService {
 	private void initiate() throws InvalidInputException, JsonGenerationException, JsonMappingException, IOException,
 			NetworkNotInitializedException {
 		log.info("Starting the initiation of ImageRecognitionService at {}", dateFormat.format(new Date()));
-		if(!networkStorageService.isNetworkPresentInStorage()) {
+		if (!networkStorageService.isNetworkPresentInStorage()) {
 			log.info("Network file NOT found. Loading a new random network.");
 			networkStorageService.createEmptyNetworkStorage();
 			int[] neuronsPerLayer = { 784, 70, 35, 10 };
-			neuralNetwork = new NeuralNetwork(neuronsPerLayer, LEARNINGRATE, -0.5d, 0.7d, -1d, 1d);
+			neuralNetwork = new NeuralNetwork(neuronsPerLayer, LEARNINGRATE, INITIALBIASLOWER, INITIALBIASUPPER,
+					INITIALWEIGHTSLOWER, INITIALWEIGHTSUPPER);
 			networkStorageService.saveNetworkToStorage(neuralNetwork);
 		}
 		log.info("Found a network file. Loading it.");
@@ -57,7 +61,7 @@ public class ImageRecognitionService {
 	}
 
 	public int recognize(double[][] images) throws InvalidInputException, NetworkNotInitializedException {
-		//Assuming square inputs
+		// Assuming square inputs
 		double[] input = new double[images.length * images.length];
 		for (int j = 0; j < images.length; j++) {
 			for (int k = 0; k < images.length; k++) {
@@ -70,18 +74,11 @@ public class ImageRecognitionService {
 	public void train() throws InvalidInputException, NetworkNotInitializedException, JsonGenerationException,
 			JsonMappingException, IOException {
 		log.info("Training this neural network from MNIST dataset");
-		DataSet trainingSet = dataStorageService.getTrainingSet();
-		for(int epoch=0; epoch < EPOCHS; epoch++) {
-			DataSet randomTrainingBatch = trainingSet.getRandomSet(SIZEFACTOR);
-			log.info("Picked up a random training batch {} of size {}", epoch, randomTrainingBatch.size());
-			for(int i=0; i < LOOPS; i++) {
-				neuralNetwork.trainALittle(randomTrainingBatch);
-//				double accuracy = measure(dataStorageService.getTrainingSet());
-//				log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
-//				networkStorageService.saveNetworkToStorage(neuralNetwork);
-			}
+		DataSet fullTrainingSet = dataStorageService.getTrainingSet();
+		for (int epoch = 0; epoch < EPOCHS; epoch++) {
+			neuralNetwork.trainUsingStochasticGradientDescent(fullTrainingSet);
 			double accuracy = measure(dataStorageService.getTrainingSet());
-			log.info("Completed training this random batch {} after {} iterations of backprop. And the current accuracy is {}", epoch, LOOPS, accuracy);
+			log.info("Completed training this full batch in epoch {}. The current accuracy is {}", epoch, accuracy);
 			networkStorageService.saveNetworkToStorage(neuralNetwork);
 		}
 	}
@@ -90,7 +87,7 @@ public class ImageRecognitionService {
 		DataSet testSet = dataStorageService.getTestSet();
 		return measure(testSet);
 	}
-	
+
 	public double measure(DataSet inputSet) throws InvalidInputException, NetworkNotInitializedException, IOException {
 		int correct = 0;
 		Iterator<TrainingExample> iterator = inputSet.iterator();
@@ -114,6 +111,5 @@ public class ImageRecognitionService {
 		}
 		return index;
 	}
-
 
 }
