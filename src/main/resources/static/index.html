@@ -2,15 +2,91 @@
 <html>
 <head>
 <meta charset="ISO-8859-1">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<title>Image Recognition</title>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<title>MNIST Image Recognition</title>
+<style>
+.center {
+	position: relative;
+}
+
+.center div {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.filebtn {
+	/*border: thick solid grey;*/
+	color: gray;
+	background-color: white;
+	padding: 8px 20px;
+	border-radius: 8px;
+	font-size: 20px;
+	font-weight: bold;
+	margin: 10px;
+}
+
+.ortext {
+	/*border: thick solid grey;*/
+	color: gray;
+	padding: 8px 20px;
+	border-radius: 8px;
+	font-size: 20px;
+	font-weight: bold;
+	margin: 10px;
+	text-align: center;
+}
+
+.textOutput {
+	font-family: Calibri;
+	letter-spacing: 2px;
+	line-height: 13px;
+	flex: 47%;
+	border: thick solid grey;
+	border-radius: 8px;
+	margin: 10px;
+	padding: 10px;
+	background: #F0F0F0;
+}
+
+.image {
+	flex: 47%;
+	margin: 10px;
+	border-radius: 8px;
+}
+</style>
 </head>
 <body>
-	<div class="image">
-		<div id="canvasSimpleDiv"></div>
+	<h1>MNIST Image Recognition</h1>
+
+	<div id="info">
+		<b>This is a MNIST digit recognition model created using custom
+			developed Neural Network. You can start by clicking "Create Random
+			Network" button.</b>
 	</div>
-	<p class="demoToolList"><button id="clearCanvasSimple" type="button">Clear</button>&nbsp;<button id="identify" type="button">Identify</button></p>
-	<p class="demoToolList2"><button id="train" type="button">Train</button>&nbsp;<button id="measure" type="button">Measure</button></p>
+	<br>
+	<div style="display: flex;">
+		<div class="image" id="image">
+			<div id="manage" style="height: 40px">
+				<button id="measure" type="button">Measure</button>
+				<button id="stop" type="button" style="display: none">Stop</button>
+				<button id="train" type="button">Train</button>
+			</div>
+			<b><div id="notification"></div></b> <b><div id="result"></div></b>
+		</div>
+		<div id="textOutput" class="textOutput">
+			<center>
+				<button id="create" type="button">Create Random Network</button>
+				<button id="load" type="button">Load a saved Network</button>
+			</center>
+			<br>
+			<textarea id="networkJson" rows="35" cols="100" style="resize: none"></textarea>
+		</div>
+	</div>
 </body>
 <script src="javascript.js"></script>
 </html>

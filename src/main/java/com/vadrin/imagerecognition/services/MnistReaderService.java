@@ -1,21 +1,63 @@
-package com.vadrin.imagerecognition.services.storage;
+package com.vadrin.imagerecognition.services;
 
 import static java.lang.String.format;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
+import com.vadrin.neuralnetwork.models.DataSet;
 
 @Service
 public class MnistReaderService {
 	private static final int LABEL_FILE_MAGIC_NUMBER = 2049;
 	private static final int IMAGE_FILE_MAGIC_NUMBER = 2051;
 
+	private static final String TRAINING_IMAGES_FILE_NAME = "train-images.idx3-ubyte";
+	private static final String TRAINING_LABLES_FILE_NAME = "train-labels.idx1-ubyte";
+	private static final String TEST_IMAGES_FILE_NAME = "t10k-images.idx3-ubyte";
+	private static final String TEST_LABLES_FILE_NAME = "t10k-labels.idx1-ubyte";
+	
+	//TODO: Since MNIST is 28 by 28 images. This method is hardcoded to 28*28 double
+	private DataSet createSet(String imagesLoc, String lablesLoc) {
+		DataSet set = new DataSet();
+		try {
+			int[] labels = getLabels(lablesLoc);
+			List<int[][]> images = getImages(imagesLoc);
+			for (int i = 0; i < labels.length; i++) {
+				double[] input = new double[28 * 28];
+				double[] output = new double[10];
+				output[labels[i]] = 1d;
+				for (int j = 0; j < 28; j++) {
+					for (int k = 0; k < 28; k++) {
+						input[k + j * 28] = (double) images.get(i)[j][k];
+					}
+				}
+				set.add(input, output);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return set;
+	}
+	
+	public DataSet getTrainingSet() throws IOException {
+		return createSet(new ClassPathResource(TRAINING_IMAGES_FILE_NAME).getFile().getPath(),
+				new ClassPathResource(TRAINING_LABLES_FILE_NAME).getFile().getPath());
+	}
+	
+	public DataSet getTestSet() throws IOException {
+		return createSet(new ClassPathResource(TEST_IMAGES_FILE_NAME).getFile().getPath(),
+				new ClassPathResource(TEST_LABLES_FILE_NAME).getFile().getPath());
+	}
+	
 	protected int[] getLabels(String infile) {
 
 		ByteBuffer bb = loadFileToByteBuffer(infile);
