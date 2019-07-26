@@ -20,10 +20,10 @@ public class MnistReaderService {
 	private static final int LABEL_FILE_MAGIC_NUMBER = 2049;
 	private static final int IMAGE_FILE_MAGIC_NUMBER = 2051;
 
-	private static final String TRAINING_IMAGES_FILE_NAME = "train-images.idx3-ubyte";
-	private static final String TRAINING_LABLES_FILE_NAME = "train-labels.idx1-ubyte";
-	private static final String TEST_IMAGES_FILE_NAME = "t10k-images.idx3-ubyte";
-	private static final String TEST_LABLES_FILE_NAME = "t10k-labels.idx1-ubyte";
+	private static final String TRAINING_IMAGES_FILE_NAME = "static/train-images.idx3-ubyte";
+	private static final String TRAINING_LABLES_FILE_NAME = "static/train-labels.idx1-ubyte";
+	private static final String TEST_IMAGES_FILE_NAME = "static/t10k-images.idx3-ubyte";
+	private static final String TEST_LABLES_FILE_NAME = "static/t10k-labels.idx1-ubyte";
 	
 	//TODO: Since MNIST is 28 by 28 images. This method is hardcoded to 28*28 double
 	private DataSet createSet(String imagesLoc, String lablesLoc) {
