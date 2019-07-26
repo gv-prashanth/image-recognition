@@ -97,7 +97,7 @@ function myLoop(jsonResponse, i) {
 					}
 					document.getElementById("notification").innerHTML = "Network Accuracy is: "
 							+ Math.round(((correct) / (correct + wrong)) * 100)
-							+ "%. <br>Records pending: " + (i - 1);
+							+ "%";
 					document.getElementById("stop").style.display = "inline";
 					document.getElementById("measure").style.display = "none";
 					document.getElementById("train").style.display = "none";
@@ -105,9 +105,16 @@ function myLoop(jsonResponse, i) {
 						document.getElementById("result").innerHTML += jsonResponse[i]['inputImage'][j]
 								+ "<br>";
 					}
-					if (--i)
+					if (--i){
 						myLoop(jsonResponse, i); // decrement i and call
 					// myLoop again if i > 0
+					}else{
+						showMeasure = false;
+						document.getElementById("result").innerHTML = "";
+						document.getElementById("stop").style.display = "none";
+						document.getElementById("measure").style.display = "inline";
+						document.getElementById("train").style.display = "inline";
+					}
 				}
-			}, 0)
+			}, 50)
 };

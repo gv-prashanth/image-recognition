@@ -24,7 +24,7 @@ public class ImageRecognitionController {
 	@Autowired
 	ImageRecognitionService imageRecognitionService;
 
-	private static final double LEARNINGRATE = 0.1d;
+	private static final double LEARNINGRATE = 0.02d;
 	private static final double INITIALBIASLOWER = -0.5d;
 	private static final double INITIALBIASUPPER = 0.7d;
 	private static final double INITIALWEIGHTSLOWER = -1d;
