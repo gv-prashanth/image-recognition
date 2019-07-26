@@ -7,6 +7,7 @@ $('#stop').mousedown(function(e) {
 	document.getElementById("result").innerHTML = "";
 	document.getElementById("stop").style.display = "none";
 	document.getElementById("measure").style.display = "inline";
+	document.getElementById("train").style.display = "inline";
 });
 
 $('#load')
@@ -95,10 +96,10 @@ function myLoop(jsonResponse, i) {
 						wrong++;
 					}
 					document.getElementById("notification").innerHTML = "Network Accuracy is: "
-							+ Math.round(((correct) / (correct + wrong)) * 100)
-							+ "%. <br>Records pending: " + (i - 1);
+							+ Math.round(((correct) / (correct + wrong)) * 100)	+ "%;
 					document.getElementById("stop").style.display = "inline";
 					document.getElementById("measure").style.display = "none";
+					document.getElementById("train").style.display = "none";
 					for (var j = 0; j < jsonResponse[i]['inputImage'].length; j++) {
 						document.getElementById("result").innerHTML += jsonResponse[i]['inputImage'][j]
 								+ "<br>";

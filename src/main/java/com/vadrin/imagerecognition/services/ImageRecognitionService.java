@@ -46,18 +46,22 @@ public class ImageRecognitionService {
 
 	public List<TestDataResult> measureMNISTDataset(NeuralNetwork neuralNetwork)
 			throws InvalidInputException, NetworkNotInitializedException, IOException {
+		log.info("Measuring this neural network from MNIST Testset");
 		List<TestDataResult> toReturn = new ArrayList<TestDataResult>();
 		DataSet testSet = mnistReaderService.getTestSet();
-//		int correct = 0;
+		int counter = 0;
 		Iterator<TrainingExample> iterator = testSet.iterator();
 		while (iterator.hasNext()) {
 			TrainingExample thisExample = iterator.next();
 			int networkAnswer = indexOfHighestValue(neuralNetwork.process(thisExample.getInput()));
 			int actualAnswer = indexOfHighestValue(thisExample.getOutput());
-			toReturn.add(new TestDataResult(imageFormattingService.constructAsciiStringFromARGBValues(thisExample.getInput(), 28), networkAnswer, actualAnswer));
+			if(counter%50==0) {
+				toReturn.add(new TestDataResult(imageFormattingService.constructAsciiStringFromARGBValues(thisExample.getInput(), 28), networkAnswer, actualAnswer));
+			}
 //			if (networkAnswer == actualAnswer) {
 //				correct++;
 //			}
+			counter++;
 		}
 //		return ((double) correct / (double) testSet.size()) * 100;
 		return toReturn;
