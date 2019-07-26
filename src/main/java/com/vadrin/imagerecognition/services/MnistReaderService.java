@@ -26,11 +26,11 @@ public class MnistReaderService {
 
 	// TODO: Since MNIST is 28 by 28 images. This method is hardcoded to 28*28
 	// double
-	private DataSet createSet(InputStream trainingInputStream, InputStream lableInputStream) {
+	private DataSet createSet(InputStream imageInputStream, InputStream lableInputStream) {
 		DataSet set = new DataSet();
 		try {
 			int[] labels = getLabels(lableInputStream);
-			List<int[][]> images = getImages(trainingInputStream);
+			List<int[][]> images = getImages(imageInputStream);
 			for (int i = 0; i < labels.length; i++) {
 				double[] input = new double[28 * 28];
 				double[] output = new double[10];
@@ -62,8 +62,17 @@ public class MnistReaderService {
 			InputStream trainingStreamImage = (new ClassPathResource(TRAINING_IMAGES_FILE_NAME)).getInputStream();
 			InputStream trainingStreamLable = (new ClassPathResource(TRAINING_LABLES_FILE_NAME)).getInputStream();
 			int[] labels = getLabels(trainingStreamLable);
-			List<int[][]> images = getImages(trainingStreamImage);
-			for (int i = 0; i < labels.length/2; i++) {
+			//List<int[][]> images = getImages(trainingStreamImage);
+			ByteBuffer bb = loadStreamToByteBuffer(trainingStreamImage);
+			assertMagicNumber(IMAGE_FILE_MAGIC_NUMBER, bb.getInt());
+			int numImages = bb.getInt();
+			numImages = 10000;
+			int numRows = bb.getInt();
+			int numColumns = bb.getInt();
+			List<int[][]> images = new ArrayList<>();
+			for (int i = 0; i < numImages; i++)
+				images.add(readImage(numRows, numColumns, bb));
+			for (int i = 0; i < images.size(); i++) {
 				double[] input = new double[28 * 28];
 				double[] output = new double[10];
 				output[labels[i]] = 1d;
