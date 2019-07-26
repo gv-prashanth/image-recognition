@@ -96,7 +96,8 @@ function myLoop(jsonResponse, i) {
 						wrong++;
 					}
 					document.getElementById("notification").innerHTML = "Network Accuracy is: "
-							+ Math.round(((correct) / (correct + wrong)) * 100)	+ "%";
+							+ Math.round(((correct) / (correct + wrong)) * 100)
+							+ "%. <br>Records pending: " + (i - 1);
 					document.getElementById("stop").style.display = "inline";
 					document.getElementById("measure").style.display = "none";
 					document.getElementById("train").style.display = "none";

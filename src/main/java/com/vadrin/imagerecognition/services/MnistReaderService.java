@@ -23,8 +23,9 @@ public class MnistReaderService {
 	private static final String TRAINING_LABLES_FILE_NAME = "static/train-labels.idx1-ubyte";
 	private static final String TEST_IMAGES_FILE_NAME = "static/t10k-images.idx3-ubyte";
 	private static final String TEST_LABLES_FILE_NAME = "static/t10k-labels.idx1-ubyte";
-	
-	//TODO: Since MNIST is 28 by 28 images. This method is hardcoded to 28*28 double
+
+	// TODO: Since MNIST is 28 by 28 images. This method is hardcoded to 28*28
+	// double
 	private DataSet createSet(InputStream trainingInputStream, InputStream lableInputStream) {
 		DataSet set = new DataSet();
 		try {
@@ -46,17 +47,44 @@ public class MnistReaderService {
 		}
 		return set;
 	}
-	
+
 	public DataSet getTrainingSet() throws IOException {
 		return createSet(new ClassPathResource(TRAINING_IMAGES_FILE_NAME).getInputStream(),
 				new ClassPathResource(TRAINING_LABLES_FILE_NAME).getInputStream());
 	}
-	
+
+	// TODO: This method is only created for heroku environment. Since its unable to
+	// load all the training date.
+	// Ideally you should use the method getTrainingSet().
+	public DataSet getSmallTrainingSet() throws IOException {
+		DataSet set = new DataSet();
+		try {
+			InputStream trainingStreamImage = (new ClassPathResource(TRAINING_IMAGES_FILE_NAME)).getInputStream();
+			InputStream trainingStreamLable = (new ClassPathResource(TRAINING_LABLES_FILE_NAME)).getInputStream();
+			int[] labels = getLabels(trainingStreamLable);
+			List<int[][]> images = getImages(trainingStreamImage);
+			for (int i = 0; i < labels.length/2; i++) {
+				double[] input = new double[28 * 28];
+				double[] output = new double[10];
+				output[labels[i]] = 1d;
+				for (int j = 0; j < 28; j++) {
+					for (int k = 0; k < 28; k++) {
+						input[k + j * 28] = (double) images.get(i)[j][k];
+					}
+				}
+				set.add(input, output);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return set;
+	}
+
 	public DataSet getTestSet() throws IOException {
 		return createSet(new ClassPathResource(TEST_IMAGES_FILE_NAME).getInputStream(),
 				new ClassPathResource(TEST_LABLES_FILE_NAME).getInputStream());
 	}
-	
+
 	protected int[] getLabels(InputStream inputStream) {
 
 		ByteBuffer bb = loadStreamToByteBuffer(inputStream);
@@ -117,8 +145,8 @@ public class MnistReaderService {
 	}
 
 	/*******
-	 * Just very ugly utilities below here. Best not to subject yourself to
-	 * them. ;-)
+	 * Just very ugly utilities below here. Best not to subject yourself to them.
+	 * ;-)
 	 ******/
 
 	private ByteBuffer loadStreamToByteBuffer(InputStream inputStream) {

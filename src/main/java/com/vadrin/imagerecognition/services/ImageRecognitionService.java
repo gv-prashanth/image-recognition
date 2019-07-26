@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -32,11 +33,20 @@ public class ImageRecognitionService {
 	
 	@Autowired
 	ImageFormattingService imageFormattingService;
+	
+	@Value("${com.vadrin.imagerecognition.isheroku: false}")
+	private boolean isHeroku;
 
 	public NeuralNetwork trainMNISTDataset(NeuralNetwork neuralNetwork) throws InvalidInputException,
 			NetworkNotInitializedException, JsonGenerationException, JsonMappingException, IOException {
 		log.info("Training this neural network from MNIST dataset");
-		DataSet fullTrainingSet = mnistReaderService.getTrainingSet();
+		DataSet fullTrainingSet;
+		//TODO: This is only solve the memory issue incase you are deploying on heroku.
+		if(isHeroku) {
+			fullTrainingSet = mnistReaderService.getSmallTrainingSet();
+		}else {
+			fullTrainingSet = mnistReaderService.getTrainingSet();
+		}
 		for (int epoch = 0; epoch < EPOCHS; epoch++) {
 			neuralNetwork.trainUsingMiniBatchGradientDescent(fullTrainingSet, SIZEFACTOR);
 			log.info("Completed training this full batch. Current epoch number is {}.", epoch);
