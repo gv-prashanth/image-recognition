@@ -1,0 +1,3 @@
+[submodule "lib/neural-network"]
+	path = lib/neural-network
+	url = https://github.com/gv-prashanth/neural-network.git
