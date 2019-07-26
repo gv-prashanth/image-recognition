@@ -38,7 +38,7 @@ public class ImageRecognitionService {
 		log.info("Training this neural network from MNIST dataset");
 		DataSet fullTrainingSet = mnistReaderService.getTrainingSet();
 		for (int epoch = 0; epoch < EPOCHS; epoch++) {
-			neuralNetwork.trainUsingStochasticGradientDescent(fullTrainingSet);
+			neuralNetwork.trainUsingMiniBatchGradientDescent(fullTrainingSet, SIZEFACTOR);
 			log.info("Completed training this full batch. Current epoch number is {}.", epoch);
 		}
 		return neuralNetwork;
