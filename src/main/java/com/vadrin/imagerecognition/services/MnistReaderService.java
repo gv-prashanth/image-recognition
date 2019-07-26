@@ -66,7 +66,7 @@ public class MnistReaderService {
 			ByteBuffer bb = loadStreamToByteBuffer(trainingStreamImage);
 			assertMagicNumber(IMAGE_FILE_MAGIC_NUMBER, bb.getInt());
 			int numImages = bb.getInt();
-			numImages = 30000;
+			numImages = 20000;
 			int numRows = bb.getInt();
 			int numColumns = bb.getInt();
 			List<int[][]> images = new ArrayList<>();
