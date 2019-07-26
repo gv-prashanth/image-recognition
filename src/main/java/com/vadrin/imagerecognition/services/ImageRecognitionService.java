@@ -48,7 +48,7 @@ public class ImageRecognitionService {
 			fullTrainingSet = mnistReaderService.getTrainingSet();
 		}
 		for (int epoch = 0; epoch < EPOCHS; epoch++) {
-			neuralNetwork.trainUsingMiniBatchGradientDescent(fullTrainingSet, SIZEFACTOR);
+			neuralNetwork.trainUsingStochasticGradientDescent(fullTrainingSet);
 			log.info("Completed training this full batch. Current epoch number is {}.", epoch);
 		}
 		return neuralNetwork;
