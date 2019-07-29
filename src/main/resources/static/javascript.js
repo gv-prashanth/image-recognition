@@ -1,31 +1,22 @@
-var showMeasure = false;
 var correct = 0;
 var wrong = 0;
-
-$('#stop').mousedown(function(e) {
-	showMeasure = false;
-	document.getElementById("result").innerHTML = "";
-	document.getElementById("stop").style.display = "none";
-	document.getElementById("measure").style.display = "inline";
-	document.getElementById("train").style.display = "inline";
-});
 
 $('#load')
 		.mousedown(
 				function(e) {
-					alert("If you have saved a network from previous exercise, You can simply paste your network into the text area below.");
+					document.getElementById("notification1").innerHTML = "If you have saved a network from previous exercise, You can simply paste your network into the text area below.";
 				});
 
 $('#create')
 		.mousedown(
 				function(e) {
-					document.getElementById("notification").innerHTML = "Constructing a random network. Please wait...";
+					document.getElementById("notification1").innerHTML = "Constructing a random network. Please wait...";
 					var xmlhttp = new XMLHttpRequest(); // new HttpRequest
 					// instance
 					xmlhttp.open("GET", "/network");
 					xmlhttp.onreadystatechange = function() {
 						if (this.readyState == 4 && this.status == 200) {
-							document.getElementById("notification").innerHTML = "Network created. You can see the network in text area.";
+							document.getElementById("notification1").innerHTML = "Network created. You can see the network in text area.";
 							document.getElementById("networkJson").value = this.responseText;
 						}
 					};
@@ -36,7 +27,8 @@ $('#measure')
 		.mousedown(
 				function(e) {
 					if (document.getElementById("networkJson").value != '') {
-						document.getElementById("notification").innerHTML = "Running MNIST test data on the network. Please wait...";
+						turnOffTrain();
+						document.getElementById("notification3").innerHTML = "Running MNIST test data on the network. Please wait...";
 						var xmlhttp = new XMLHttpRequest(); // new HttpRequest
 						// instance
 						xmlhttp.open("POST", "/network/score");
@@ -44,7 +36,6 @@ $('#measure')
 								"application/json");
 						xmlhttp.onreadystatechange = function() {
 							if (this.readyState == 4 && this.status == 200) {
-								showMeasure = true;
 								correct = 0;
 								wrong = 0;
 								var jsonResponse = JSON
@@ -55,37 +46,59 @@ $('#measure')
 						xmlhttp
 								.send(document.getElementById("networkJson").value);
 					} else {
-						document.getElementById("notification").innerHTML = "You dont have any network. Please try creating a random network.";
+						document.getElementById("notification3").innerHTML = "You dont have any network. Please try creating a random network.";
 					}
 				});
 
-$('#train')
-		.mousedown(
-				function(e) {
-					if (document.getElementById("networkJson").value != '') {
-						document.getElementById("notification").innerHTML = "Training in progress. Please wait...";
-						var xmlhttp = new XMLHttpRequest(); // new HttpRequest
-						// instance
-						xmlhttp.open("PUT", "/network");
-						xmlhttp.setRequestHeader("Content-Type",
-								"application/json");
-						xmlhttp.onreadystatechange = function() {
-							if (this.readyState == 4 && this.status == 200) {
-								document.getElementById("notification").innerHTML = "Training complete and the network in the text area is updated. Click measure to see network quality. Note that you can always re-train the network if you are not satisfied with results.";
-								document.getElementById("networkJson").value = this.responseText;
-							}
-						};
-						xmlhttp
-								.send(document.getElementById("networkJson").value);
-					} else {
-						document.getElementById("notification").innerHTML = "You dont have any network. Please try creating a random network.";
-					}
-				});
+$('#train1')
+.mousedown(
+		function(e) {
+			train("stochastic");
+		});
+
+$('#train2')
+.mousedown(
+		function(e) {
+			train("minibatch");
+		});
+
+$('#train3')
+.mousedown(
+		function(e) {
+			train("fullbatch");
+		});
+
+function train(type){
+	if (document.getElementById("networkJson").value != '') {
+		turnOffTrain();
+		document.getElementById("notification2").innerHTML = "Training in progress. Please wait...";
+		var xmlhttp = new XMLHttpRequest(); // new HttpRequest
+		// instance
+		xmlhttp.open("PUT", "/network/"+type);
+		xmlhttp.setRequestHeader("Content-Type",
+				"application/json");
+		xmlhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				turnOnTrain();
+				document.getElementById("notification2").innerHTML = "Training complete and the network in the text area is updated. Click measure to see network quality. Note that you can always re-train the network if you are not satisfied with results.";
+				document.getElementById("networkJson").value = this.responseText;
+				if(document.getElementById("train4").checked){
+					train(type);
+				}
+			}
+		};
+		xmlhttp
+				.send(document.getElementById("networkJson").value);
+	} else {
+		document.getElementById("notification2").innerHTML = "You dont have any network. Please try creating a random network.";
+	}
+}
+
 
 function myLoop(jsonResponse, i) {
 	setTimeout(
 			function() {
-				if (showMeasure) {
+
 					document.getElementById("result").innerHTML = "";
 
 					if (jsonResponse[i]['networkAnswer'] == jsonResponse[i]['actualAnswer']) {
@@ -95,12 +108,10 @@ function myLoop(jsonResponse, i) {
 						document.getElementById("result").style.color = "red";
 						wrong++;
 					}
-					document.getElementById("notification").innerHTML = "Network Accuracy is: "
+					document.getElementById("notification3").innerHTML = "Network Accuracy is: "
 							+ Math.round(((correct) / (correct + wrong)) * 100)
 							+ "%";
-					document.getElementById("stop").style.display = "inline";
-					document.getElementById("measure").style.display = "none";
-					document.getElementById("train").style.display = "none";
+					document.getElementById("measure").disabled = true;
 					for (var j = 0; j < jsonResponse[i]['inputImage'].length; j++) {
 						document.getElementById("result").innerHTML += jsonResponse[i]['inputImage'][j]
 								+ "<br>";
@@ -109,12 +120,19 @@ function myLoop(jsonResponse, i) {
 						myLoop(jsonResponse, i); // decrement i and call
 					// myLoop again if i > 0
 					}else{
-						showMeasure = false;
 						document.getElementById("result").innerHTML = "";
-						document.getElementById("stop").style.display = "none";
-						document.getElementById("measure").style.display = "inline";
-						document.getElementById("train").style.display = "inline";
+						document.getElementById("measure").disabled = false;
+						turnOnTrain();
 					}
-				}
 			}, 50)
 };
+
+function turnOffTrain() {
+	$('#train :input').attr('disabled', true);
+	document.getElementById("measure").disabled = true;
+}
+
+function turnOnTrain() {
+	$('#train :input').removeAttr('disabled');
+	document.getElementById("measure").disabled = false;
+}

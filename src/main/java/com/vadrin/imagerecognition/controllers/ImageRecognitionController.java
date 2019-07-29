@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -44,10 +45,10 @@ public class ImageRecognitionController {
 		return imageRecognitionService.measureMNISTDataset(new NeuralNetwork(neuralNetworkJson));
 	}
 
-	@RequestMapping(method = RequestMethod.PUT, value = "/network")
-	public NeuralNetwork train(@RequestBody JsonNode neuralNetworkJson) throws JsonGenerationException,
+	@RequestMapping(method = RequestMethod.PUT, value = "/network/{trainingType}")
+	public NeuralNetwork trainStochastic(@RequestBody JsonNode neuralNetworkJson, @PathVariable String trainingType) throws JsonGenerationException,
 			JsonMappingException, InvalidInputException, NetworkNotInitializedException, IOException {
-		return imageRecognitionService.trainMNISTDataset(new NeuralNetwork(neuralNetworkJson));
+		return imageRecognitionService.trainMNISTDataset((new NeuralNetwork(neuralNetworkJson)), trainingType);
 	}
 
 }

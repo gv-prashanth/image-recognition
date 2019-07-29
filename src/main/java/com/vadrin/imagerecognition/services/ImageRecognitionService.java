@@ -30,26 +30,40 @@ public class ImageRecognitionService {
 
 	@Autowired
 	private MnistReaderService mnistReaderService;
-	
+
 	@Autowired
 	ImageFormattingService imageFormattingService;
-	
+
 	@Value("${com.vadrin.imagerecognition.isheroku: false}")
 	private boolean isHeroku;
 
-	public NeuralNetwork trainMNISTDataset(NeuralNetwork neuralNetwork) throws InvalidInputException,
-			NetworkNotInitializedException, JsonGenerationException, JsonMappingException, IOException {
+	public NeuralNetwork trainMNISTDataset(NeuralNetwork neuralNetwork, String trainingType)
+			throws InvalidInputException, NetworkNotInitializedException, JsonGenerationException, JsonMappingException,
+			IOException {
 		log.info("Training this neural network from MNIST dataset");
 		DataSet fullTrainingSet;
-		//TODO: This is only solve the memory issue incase you are deploying on heroku.
-		if(isHeroku) {
+		// TODO: This is only solve the memory issue incase you are deploying on heroku.
+		if (isHeroku) {
 			fullTrainingSet = mnistReaderService.getSmallTrainingSet();
-		}else {
+		} else {
 			fullTrainingSet = mnistReaderService.getTrainingSet();
 		}
 		for (int epoch = 0; epoch < EPOCHS; epoch++) {
-			neuralNetwork.trainUsingStochasticGradientDescent(fullTrainingSet);
-			log.info("Completed training this full batch. Current epoch number is {}.", epoch);
+			switch (trainingType) {
+			case "stochastic":
+				neuralNetwork.trainUsingStochasticGradientDescent(fullTrainingSet);
+				break;
+			case "minibatch":
+				neuralNetwork.trainUsingMiniBatchGradientDescent(fullTrainingSet, SIZEFACTOR);
+				break;
+			case "fullbatch":
+				neuralNetwork.trainUsingFullBatchGradientDescent(fullTrainingSet);
+				break;
+			default:
+				neuralNetwork.trainUsingStochasticGradientDescent(fullTrainingSet);
+				break;
+			}
+			log.info("Completed training this epoch. Current epoch number is {}.", epoch);
 		}
 		return neuralNetwork;
 	}
@@ -65,8 +79,10 @@ public class ImageRecognitionService {
 			TrainingExample thisExample = iterator.next();
 			int networkAnswer = indexOfHighestValue(neuralNetwork.process(thisExample.getInput()));
 			int actualAnswer = indexOfHighestValue(thisExample.getOutput());
-			if(counter%50==0) {
-				toReturn.add(new TestDataResult(imageFormattingService.constructAsciiStringFromARGBValues(thisExample.getInput(), 28), networkAnswer, actualAnswer));
+			if (counter % 50 == 0) {
+				toReturn.add(new TestDataResult(
+						imageFormattingService.constructAsciiStringFromARGBValues(thisExample.getInput(), 28),
+						networkAnswer, actualAnswer));
 			}
 //			if (networkAnswer == actualAnswer) {
 //				correct++;

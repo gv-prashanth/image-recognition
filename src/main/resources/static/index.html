@@ -4,7 +4,7 @@
 <meta charset="ISO-8859-1">
 <script
 	src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<title>MNIST Image Recognition</title>
+<title>Image Recognition</title>
 <style>
 .center {
 	position: relative;
@@ -41,11 +41,15 @@
 	text-align: center;
 }
 
-.textOutput {
+.result {
 	font-family: Calibri;
 	letter-spacing: 2px;
 	line-height: 13px;
-	flex: 50%;
+}
+
+.textOutput {
+	font-family: Calibri;
+	flex: 33%;
 	border: thick solid grey;
 	border-radius: 8px;
 	margin: 10px;
@@ -53,39 +57,81 @@
 	background: #F0F0F0;
 }
 
-.image {
-	flex: 50%;
-	margin: 10px;
-	border-radius: 8px;
+ul li {
+	margin: 7px;
 }
 
+.image {
+	flex: 33%;
+	font-family: Calibri;
+	border: thick solid grey;
+	border-radius: 8px;
+	margin: 10px;
+	padding: 10px;
+	background: #F0F0F0;
+}
+
+.trainwrapper {
+	flex: 33%;
+	font-family: Calibri;
+	border: thick solid grey;
+	border-radius: 8px;
+	margin: 10px;
+	padding: 10px;
+	background: #F0F0F0;
+}
+
+.notification {
+	color: green;
+}
 </style>
 </head>
 <body>
-	<h1>MNIST Image Recognition</h1>
+	<h1>Image Recognition</h1>
 
 	<div id="info">
-		<b>This is a MNIST digit recognition model created using custom
-			developed Neural Network. You can start by clicking "Create Random
-			Network" button.</b>
+		<b>This is a <a href="http://yann.lecun.com/exdb/mnist/">MNIST</a>
+			digit recognition model created using custom developed Neural
+			Network. You can start by clicking "Create Random Network" button.
+		</b>
 	</div>
-	<br>
 	<div style="display: flex;">
-		<div class="image" id="image">
-			<div id="manage" style="height: 40px">
-				<button id="measure" type="button">Measure</button>
-				<button id="stop" type="button" style="display: none">Stop</button>
-				<button id="train" type="button">Train</button>
-			</div>
-			<b><div id="notification"></div></b> <b><div id="result"></div></b>
-		</div>
 		<div id="textOutput" class="textOutput">
-			<center>
-			<button id="create" type="button">Create Random Network</button>
-			<button id="load" type="button">Load a saved Network</button>
-			</center>
-			<br>
-			<textarea id="networkJson" rows=35 style="width:100%; resize: none;"></textarea>
+			<b>Load a network:</b>
+			<ul>
+				<li><button id="create" type="button">Create Random
+						Network</button></li>
+				<li><button id="load" type="button">Load a saved
+						Network</button></li>
+			</ul>
+			<b><div id="notification1" class="notification"></div></b>
+			<textarea id="networkJson" rows=32 style="width: 100%; resize: none;"></textarea>
+		</div>
+		<div id="trainwrapper" class="trainwrapper">
+			<div id="train" class="train">
+				<b>Train on MNIST Training Dataset:</b>
+				<ul>
+					<li><button id="train1" type="button">Stochastic
+							Gradient Descent</button></li>
+					<li><button id="train2" type="button">Mini Batch Gradient
+							Descent</button></li>
+					<li><button id="train3" type="button">Full Batch
+							Gradient Descent</button></li>
+				</ul>
+			</div>
+			<input type="checkbox" id="train4">Keep Training <b>
+				<div id="notification2" class="notification"></div>
+			</b>
+		</div>
+		<div class="image" id="image">
+			<div id="manage" class="manage">
+				<b>Test on MNIST Test Dataset:</b>
+				<ul>
+					<li><button id="measure" type="button">Test</button></li>
+				</ul>
+			</div>
+			<b><div id="notification3" class="notification"></div></b> <b><div
+					id="result"></div></b>
 		</div>
 	</div>
 </body>
