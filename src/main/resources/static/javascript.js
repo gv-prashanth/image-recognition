@@ -71,7 +71,7 @@ $('#train')
 								"application/json");
 						xmlhttp.onreadystatechange = function() {
 							if (this.readyState == 4 && this.status == 200) {
-								document.getElementById("notification").innerHTML = "Training complete. Click measure to see network quality. Note that you can always re-train the network if you are not satisfied with results.";
+								document.getElementById("notification").innerHTML = "Training complete and the network in the text area is updated. Click measure to see network quality. Note that you can always re-train the network if you are not satisfied with results.";
 								document.getElementById("networkJson").value = this.responseText;
 							}
 						};
