@@ -49,7 +49,7 @@
 
 .textOutput {
 	font-family: Calibri;
-	flex: 33%;
+	flex: 25%;
 	border: thick solid grey;
 	border-radius: 8px;
 	margin: 10px;
@@ -62,7 +62,7 @@ ul li {
 }
 
 .image {
-	flex: 33%;
+	flex: 25%;
 	font-family: Calibri;
 	border: thick solid grey;
 	border-radius: 8px;
@@ -72,7 +72,7 @@ ul li {
 }
 
 .trainwrapper {
-	flex: 33%;
+	flex: 25%;
 	font-family: Calibri;
 	border: thick solid grey;
 	border-radius: 8px;
@@ -102,6 +102,8 @@ ul li {
 				<li><button id="create" type="button">Create Random
 						Network</button></li>
 				<li><button id="load" type="button">Load a saved
+						Network</button></li>
+				<li><button id="default" type="button">Load a really good
 						Network</button></li>
 			</ul>
 			<b><div id="notification1" class="notification"></div></b>
@@ -133,7 +135,20 @@ ul li {
 			<b><div id="notification3" class="notification"></div></b> <b><div
 					id="result"></div></b>
 		</div>
+		<div class="image" id="image2">
+			<div id="manage2" class="manage">
+				<b>Test Yourself:</b>
+				<ul>
+					<li><button id="identify" type="button">Identify</button></li>
+					<li><button id="clearCanvasSimple" type="button">Clear</button></li>
+				</ul>
+			</div>
+			<center><div id="canvasSimpleDiv"></div></center>
+			<b><div id="notification4" class="notification"></div></b> <b><div
+					id="result2"></div></b>
+		</div>
 	</div>
 </body>
 <script src="javascript.js"></script>
+<script src="javascriptCanvas.js"></script>
 </html>

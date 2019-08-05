@@ -102,5 +102,16 @@ public class ImageRecognitionService {
 		}
 		return index;
 	}
+	
+	public int recognize(NeuralNetwork neuralNetwork, double[][] images) throws InvalidInputException, NetworkNotInitializedException {
+		//Assuming square inputs
+		double[] input = new double[images.length * images.length];
+		for (int j = 0; j < images.length; j++) {
+			for (int k = 0; k < images.length; k++) {
+				input[k + j * images.length] = images[j][k];
+			}
+		}
+		return indexOfHighestValue(neuralNetwork.process(input));
+	}
 
 }
