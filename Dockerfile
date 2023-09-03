@@ -8,7 +8,6 @@ WORKDIR /app
 COPY pom.xml ./
 # Copy local code to the container image.
 COPY src ./src
-COPY repo ./repo
 
 # Download dependencies and build a release artifact.
 RUN mvn package -DskipTests
@@ -16,10 +15,10 @@ RUN mvn package -DskipTests
 # Use OpenJDK for base image.
 # https://hub.docker.com/_/openjdk
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM openjdk:8-jre-slim
+FROM openjdk:8-jre-alpine
 
 # Copy the jar to the production image from the builder stage.
 COPY --from=build-env /app/target/image-recognition*.jar /image-recognition.jar
 
 # Run the web service on container startup.
-CMD ["java", "-jar", "/image-recognition"]
+CMD ["java", "-jar", "/image-recognition.jar"]
