@@ -8,6 +8,7 @@ WORKDIR /app
 COPY pom.xml ./
 # Copy local code to the container image.
 COPY src ./src
+COPY repo ./repo
 
 # Download dependencies and build a release artifact.
 RUN mvn package -DskipTests

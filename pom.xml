@@ -29,11 +29,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-<!-- 		<dependency> -->
-<!-- 			<groupId>com.vadrin.neuralnetwork</groupId> -->
-<!-- 			<artifactId>neural-network</artifactId> -->
-<!-- 			<version>0.0.1-SNAPSHOT</version> -->
-<!-- 		</dependency> -->
+		<dependency>
+			<groupId>com.vadrin.neuralnetwork</groupId>
+			<artifactId>neural-network</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
@@ -61,11 +61,11 @@
 
 	<repositories>
 	    <!--other repositories if any-->
-<!-- 	    <repository> -->
-<!-- 	        <id>project.local</id> -->
-<!-- 	        <name>project</name> -->
-<!-- 	        <url>file:${project.basedir}/repo</url> -->
-<!-- 	    </repository> -->
+	    <repository>
+	        <id>project.local</id>
+	        <name>project</name>
+	        <url>file:${project.basedir}/repo</url>
+	    </repository>
 	</repositories>
 
 </project>
